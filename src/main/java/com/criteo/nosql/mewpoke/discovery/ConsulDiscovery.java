@@ -40,20 +40,12 @@ public class ConsulDiscovery implements IDiscovery {
         this.executor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("consul-%d").build());
     }
 
-    private static String getFromTags(final HealthService.Service service, final String prefix) {
-        return service.getTags().stream()
-                .filter(tag -> tag.startsWith(prefix))
-                .map(tag -> tag.substring(prefix.length()))
-                .findFirst().orElse("NotDefined");
-    }
-
-    public static String getClusterName(final HealthService.Service service) {
-        return getFromTags(service, "cluster=");
-    }
-
-    public static String getBucketName(final HealthService.Service service) {
-        return getFromTags(service, "bucket=");
-    }
+//    private static String getFromTags(final HealthService.Service service, final String prefix) {
+//        return service.getTags().stream()
+//                .filter(tag -> tag.startsWith(prefix))
+//                .map(tag -> tag.substring(prefix.length()))
+//                .findFirst().orElse("NotDefined");
+//    }
 
     private Map<Service, Set<InetSocketAddress>> getServicesNodesForImpl(List<String> tags) {
         final ConsulClient client = new ConsulClient(host, port);
@@ -80,7 +72,7 @@ public class ConsulDiscovery implements IDiscovery {
                     .forEach(hsrv -> {
                         logger.debug("{}", hsrv.getNode());
                         nodes.add(new InetSocketAddress(hsrv.getNode().getAddress(), hsrv.getService().getPort()));
-                        srv[0] = new Service(getClusterName(hsrv.getService()), getBucketName(hsrv.getService()));
+                        srv[0] = new Service(hsrv.getService().getService());
                     });
             if (nodes.size() > 0) {
                 servicesNodes.put(srv[0], nodes);
